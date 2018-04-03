@@ -12,7 +12,8 @@ p.add_argument('-o', "--outfile", type=str, required=False, help="output filenam
 p.add_argument('-d', "--debug_level", type=str, required=False, help="logging level")
 
 class UniprotWrapper():
-    DBS_TO_LOOKUP = ["MGI_ID", "RGD_ID", "FLYBASE_ID", "WORMBASE_ID", "HGNC_ID"]
+    # DBS_TO_LOOKUP = ["MGI_ID", "RGD_ID", "FLYBASE_ID", "WORMBASE_ID", "HGNC_ID"]
+    DBS_TO_LOOKUP = ["MGI_ID", "RGD_ID", "FLYBASE_ID", "WORMBASE_ID"]
     OTHER_FIELDS_TO_FETCH = ["GENENAME"]
 
     def make_uniprot_call(self, uniprot_ids, current_map=None):

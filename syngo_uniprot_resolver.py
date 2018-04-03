@@ -41,13 +41,19 @@ def main():
                 uniprot_id = uniprot_id.split("-")[0] # Adjust for isoforms
             noctua_gene_id = wrapper.get_noctua_gene_id(id_map, uniprot_id)
             if noctua_gene_id is None:
-                # Report missing info for this one
-                print(m['uniprot'] + " - " + a['combi_id'] + " - " + str(UniprotWrapper.get_field_for_id(id_map, "GENENAME", uniprot_id)))
                 noctua_gene_id = m["uniprot"]
             m["noctua_gene_id"] = noctua_gene_id
+            resulting_dbs = list(set(wrapper.DBS_TO_LOOKUP) & set(id_map[uniprot_id].keys()))
+            if len(resulting_dbs) > 0:
+                m["id_db_source"] = resulting_dbs[0]
+            else:
+                m["id_db_source"] = "uniprot"
             for field in UniprotWrapper.OTHER_FIELDS_TO_FETCH:
                 if field in id_map[uniprot_id]:
                     m[field] = UniprotWrapper.get_field_for_id(id_map, field, uniprot_id)
+            if "GENENAME" not in m:
+                # Report missing info for this one
+                print(m['uniprot'] + " - " + a['combi_id'] + " - " + str(UniprotWrapper.get_field_for_id(id_map, "GENENAME", uniprot_id)))
             ext_relations = []
             for e in m['extensions']:
                 for k in e.keys():
