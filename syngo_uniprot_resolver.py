@@ -8,6 +8,7 @@ from uniprot_wrapper import UniprotWrapper
 
 p = argparse.ArgumentParser()
 p.add_argument('-f', "--filename", type=str, required=True, help="input filename of SynGO annotation export JSON")
+p.add_argument('-o', "--outfile", type=str, required=False, help="output filename")
 
 def main():
     args = p.parse_args()
@@ -80,7 +81,10 @@ def main():
             models.append(m)
         a['models'] = models
 
-    with open(path.splitext(filename)[0] + "_updated" + path.splitext(filename)[1], "w") as wf:
+    outfile = args.outfile
+    if outfile is None:
+        outfile = path.splitext(filename)[0] + "_updated" + path.splitext(filename)[1]
+    with open(outfile, "w+") as wf:
         json.dump(data, wf, indent=4)
 
 if __name__ == "__main__":

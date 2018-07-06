@@ -18,16 +18,17 @@ class UniprotWrapper():
 
     def make_uniprot_call(self, uniprot_ids, current_map=None):
         request_min = 0
+        request_max = 500
         while request_min < len(uniprot_ids):
             for field in self.DBS_TO_LOOKUP + self.OTHER_FIELDS_TO_FETCH:
-                r = requests.get('http://www.uniprot.org/uploadlists/?from=ACC&to=' + field + '&format=tab&query=' + " ".join(uniprot_ids[request_min:request_min+500]))
+                r = requests.get('http://www.uniprot.org/uploadlists/?from=ACC&to=' + field + '&format=tab&query=' + " ".join(uniprot_ids[request_min:request_min+request_max]))
                 uniprot_results = read_csv(StringIO(r.text), delimiter='\t')
 
                 for index, row in uniprot_results.iterrows():
                     logging.debug(row[0] + " - " + field)
                     current_map[row[0]][field] = row[1]
 
-            request_min += 500 # For some reason requesting >1000 results in 400 error
+            request_min += request_max # For some reason requesting >1000 results in 400 error
         return current_map
 
     def lookup_uniprot(self, uniprot_ids, current_map=None, isoform_check=True):
@@ -49,6 +50,26 @@ class UniprotWrapper():
             current_map = self.make_uniprot_call(redo_ids, current_map)
 
         return current_map
+
+    @staticmethod
+    def one_off_call(uniprot_id):
+        r = requests.get('http://www.uniprot.org/uniprot/' + uniprot_id + '.txt')
+        return UniprotWrapper.get_gene_label(r.text.split("\n"))
+
+    @staticmethod
+    def get_gene_label(result_lines):
+        gene_name = ""
+        species = ""
+        for line in result_lines:
+            if line.startswith("GN   Name="):
+                gene_name = line[5:len(line)].split(";")[0].split("{")[0]
+                gene_name = gene_name[5:len(gene_name)].rstrip()
+            elif line.startswith("OS"):
+                species = line[5:len(line)]
+                species = species.split(" ")
+                species = species[0][0] + species[1][0:3]
+        label = gene_name + " " + species
+        return label
 
     @staticmethod
     def get_field_for_id(current_map, field, uniprot_id):
